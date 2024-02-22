@@ -7,7 +7,7 @@ this is malware don't run w out proper precautions
 
 to run 
 
-```
-Set-ExecutionPolicy Unrestricted
+```ps1
+Set-ExecutionPolicy Unrestricted -Scope Process
 ./shellcoderunner 
 ```
