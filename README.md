@@ -5,6 +5,8 @@
 
 this is malware don't run w out proper precautions
 
+contains asm for the shellcode for educational purposes + commentless rust file 
+
 to run 
 
 ```ps1
